@@ -1,0 +1,1992 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KAPITAL® — Organizador de Gastos Personales & Finanzas Modulares</title>
+  <meta name="description" content="Organizador inteligente de gastos, ingresos, deudas y metas de ahorro. Arquitectura financiera modular para alcanzar la libertad económica.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            neutral: {
+              950: '#09090b',
+              900: '#121215',
+              850: '#16161a',
+              800: '#1f1f23',
+              700: '#2e2e34',
+              600: '#52525b',
+              500: '#71717a',
+              400: '#a1a1aa',
+              300: '#d4d4d8',
+              200: '#e4e4e7',
+              100: '#f4f4f5',
+              50: '#fafafa',
+            },
+            accent: {
+              emerald: '#10b981',
+              emeraldGlow: 'rgba(16, 185, 129, 0.15)',
+              violet: '#8b5cf6',
+              amber: '#f59e0b',
+              rose: '#f43f5e',
+            }
+          },
+          animation: {
+            'marquee': 'marquee 35s linear infinite',
+            'pulse-subtle': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            marquee: {
+              '0%': { transform: 'translateX(0%)' },
+              '100%': { transform: 'translateX(-50%)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+
+    .glass-panel {
+      background: rgba(18, 18, 21, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    
+    .glass-card {
+      background: #121215;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-2px);
+    }
+
+    .glow-bg {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, rgba(0,0,0,0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Stacking cards sticky effect */
+    .sticky-card {
+      position: sticky;
+      top: 90px;
+    }
+
+    /* Toast container */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast-msg {
+      pointer-events: auto;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .toast-msg.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="bg-neutral-950 text-neutral-100 font-sans antialiased selection:bg-neutral-50 selection:text-neutral-950 min-h-screen flex flex-col">
+
+  <!-- ================= TOAST NOTIFICATION CONTAINER ================= -->
+  <div id="toast-container"></div>
+
+  <!-- ================= HEADER / NAVBAR ================= -->
+  <header class="sticky top-0 z-50 w-full glass-panel border-b border-neutral-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="#hero" class="flex items-center gap-2 group">
+        <span class="text-2xl sm:text-3xl font-black tracking-tighter lowercase text-neutral-50 font-mono">
+          kapital<sup class="text-[0.45em] text-neutral-400 font-normal ml-0.5">®</sup>
+        </span>
+        <span class="hidden sm:inline-block text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-neutral-800/90 text-neutral-400 border border-neutral-700/60">
+          v2.4 Core
+        </span>
+      </a>
+
+      <!-- Navigation Links -->
+      <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-neutral-400">
+        <a href="#app-dashboard" class="text-neutral-100 hover:text-white transition flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+          App Gestor
+        </a>
+        <a href="#services" class="hover:text-neutral-200 transition">Especialización</a>
+        <a href="#templates" class="hover:text-neutral-200 transition">Plantillas Pro</a>
+        <a href="#pricing" class="hover:text-neutral-200 transition">Planes & Precios</a>
+        <a href="#methodology" class="hover:text-neutral-200 transition">Metodología</a>
+      </nav>
+
+      <!-- Right Actions: Currency & CTA -->
+      <div class="flex items-center gap-3">
+        <!-- Currency selector -->
+        <div class="relative">
+          <select id="currency-select" onchange="changeCurrency(this.value)" class="bg-neutral-900 border border-neutral-800 text-xs font-mono text-neutral-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-neutral-600 cursor-pointer">
+            <option value="USD">USD ($)</option>
+            <option value="ARS">ARS ($)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="MXN">MXN ($)</option>
+          </select>
+        </div>
+
+        <a href="#app-dashboard" class="inline-flex items-center justify-center rounded-lg bg-neutral-50 px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-950 transition hover:bg-white hover:shadow-lg focus-visible:outline-none active:scale-[0.98]">
+          Abrir Gestor
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HERO SECTION ================= -->
+  <section id="hero" class="relative overflow-hidden pt-16 pb-20 sm:pt-24 sm:pb-28 border-b border-neutral-900">
+    <div class="glow-bg top-0 left-1/2 -translate-x-1/2 opacity-70"></div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+      
+      <!-- Tag badge -->
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-900 border border-neutral-800 text-xs text-neutral-400 mb-6 sm:mb-8">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span>Sistema de Gestión Financiera Personal Modular</span>
+      </div>
+
+      <!-- Headline -->
+      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-neutral-50 max-w-4xl mx-auto leading-[1.1] sm:leading-[1.1]">
+        Entendemos tus números.<br>
+        <span class="text-neutral-400">Construimos tu libertad.</span>
+      </h1>
+
+      <!-- Description -->
+      <p class="mt-6 text-base sm:text-lg lg:text-xl text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+        Diseñamos la arquitectura de tus finanzas personales: registro quirúrgico de ingresos y gastos, extinción matemática de deudas y metas de ahorro con proyección automatizada.
+      </p>
+
+      <!-- Hero CTAs -->
+      <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <a href="#app-dashboard" class="inline-flex items-center justify-center rounded-xl bg-neutral-50 px-6 py-3.5 text-sm sm:text-base font-semibold text-neutral-950 shadow-md transition hover:bg-white hover:scale-[1.02] active:scale-[0.99]">
+          Comenzar Gratis en la App
+        </a>
+        <a href="#templates" class="inline-flex items-center justify-center rounded-xl bg-neutral-900 border border-neutral-800 px-6 py-3.5 text-sm sm:text-base font-semibold text-neutral-300 transition hover:bg-neutral-800 hover:text-white">
+          Explorar Plantillas Pro
+        </a>
+      </div>
+
+      <!-- Quick Metrics Ribbon -->
+      <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-8 border-t border-neutral-900 text-left">
+        <div class="p-4 rounded-xl bg-neutral-900/50 border border-neutral-800/60">
+          <div class="text-xs font-mono text-neutral-500 uppercase">Ahorro Promedio</div>
+          <div class="text-2xl font-bold text-emerald-400 font-mono mt-1">+34.8%</div>
+          <div class="text-[11px] text-neutral-400 mt-0.5">En los primeros 90 días</div>
+        </div>
+        <div class="p-4 rounded-xl bg-neutral-900/50 border border-neutral-800/60">
+          <div class="text-xs font-mono text-neutral-500 uppercase">Tasa Desendeudamiento</div>
+          <div class="text-2xl font-bold text-neutral-100 font-mono mt-1">2.4x</div>
+          <div class="text-[11px] text-neutral-400 mt-0.5">Más rápido con método Avalancha</div>
+        </div>
+        <div class="p-4 rounded-xl bg-neutral-900/50 border border-neutral-800/60">
+          <div class="text-xs font-mono text-neutral-500 uppercase">Privacidad & Control</div>
+          <div class="text-2xl font-bold text-neutral-100 font-mono mt-1">100%</div>
+          <div class="text-[11px] text-neutral-400 mt-0.5">Datos almacenados en tu navegador</div>
+        </div>
+        <div class="p-4 rounded-xl bg-neutral-900/50 border border-neutral-800/60">
+          <div class="text-xs font-mono text-neutral-500 uppercase">Monetización</div>
+          <div class="text-2xl font-bold text-neutral-100 font-mono mt-1">Freemium</div>
+          <div class="text-[11px] text-neutral-400 mt-0.5">Plantillas y planes accesibles</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= MARQUEE TICKER (Dagatek Style) ================= -->
+  <div class="w-full bg-neutral-900/90 border-y border-neutral-800 overflow-hidden py-3">
+    <div class="flex w-max animate-marquee space-x-8 text-xs sm:text-sm font-mono tracking-wider text-neutral-400 uppercase">
+      <span>· Registro de Ingresos y Gastos</span>
+      <span>· Eliminación Estratégica de Deudas</span>
+      <span>· Metas de Ahorro e Inversión</span>
+      <span>· Regla 50/30/20</span>
+      <span>· Calculadora FIRE</span>
+      <span>· Proyecciones de Interés Compuesto</span>
+      <span>· Plantillas Excel / Sheets Sincronizadas</span>
+      <span>· Respaldo Seguro Offline</span>
+      <!-- Duplicate for loop -->
+      <span>· Registro de Ingresos y Gastos</span>
+      <span>· Eliminación Estratégica de Deudas</span>
+      <span>· Metas de Ahorro e Inversión</span>
+      <span>· Regla 50/30/20</span>
+      <span>· Calculadora FIRE</span>
+      <span>· Proyecciones de Interés Compuesto</span>
+      <span>· Plantillas Excel / Sheets Sincronizadas</span>
+      <span>· Respaldo Seguro Offline</span>
+    </div>
+  </div>
+
+  <!-- ================= MAIN INTERACTIVE WEB APP DASHBOARD ================= -->
+  <section id="app-dashboard" class="py-12 sm:py-16 bg-neutral-950 border-b border-neutral-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+        <div>
+          <div class="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-emerald-400 mb-2">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Módulo Operativo en Vivo
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-bold text-neutral-50 tracking-tight">Panel de Control Financiero</h2>
+          <p class="text-neutral-400 text-sm mt-1">Registra, simula y administra tus ingresos, gastos, pasivos y metas.</p>
+        </div>
+        
+        <!-- App Top Actions -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <input type="file" id="import-json-input" class="hidden" accept=".json" onchange="handleFileImport(event)">
+          <button onclick="document.getElementById('import-json-input').click()" class="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 text-xs font-mono transition flex items-center gap-1">
+            📤 Importar JSON
+          </button>
+          <button onclick="exportDataJSON()" class="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 text-xs font-mono transition flex items-center gap-1">
+            📥 Exportar JSON
+          </button>
+          <button onclick="loadSampleData()" class="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 text-xs font-mono transition">
+            ✨ Cargar Demo
+          </button>
+          <button onclick="clearAllData()" class="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-rose-950/40 text-rose-400 border border-neutral-800 text-xs font-mono transition">
+            🗑️ Limpiar
+          </button>
+        </div>
+      </div>
+
+      <!-- Financial Metrics Summary Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        
+        <!-- Balance Neto -->
+        <div class="glass-card p-5 rounded-2xl relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase text-neutral-400">Balance Neto</span>
+            <span id="health-badge" class="px-2 py-0.5 text-[10px] font-mono rounded bg-emerald-950 text-emerald-400 border border-emerald-800/50">Saludable</span>
+          </div>
+          <div id="metric-balance" class="text-2xl sm:text-3xl font-bold font-mono text-neutral-50 mt-2">$0.00</div>
+          <div class="text-[11px] text-neutral-500 mt-1 flex items-center justify-between">
+            <span>Ingresos - Gastos</span>
+            <span id="metric-savings-rate" class="text-emerald-400 font-mono">0% tasa ahorro</span>
+          </div>
+        </div>
+
+        <!-- Total Ingresos -->
+        <div class="glass-card p-5 rounded-2xl">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase text-neutral-400">Total Ingresos</span>
+            <span class="text-emerald-400 text-xs">↑ Entrada</span>
+          </div>
+          <div id="metric-income" class="text-2xl font-bold font-mono text-emerald-400 mt-2">$0.00</div>
+          <div id="metric-income-count" class="text-[11px] text-neutral-500 mt-1">0 transacciones</div>
+        </div>
+
+        <!-- Total Gastos -->
+        <div class="glass-card p-5 rounded-2xl">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase text-neutral-400">Total Gastos</span>
+            <span class="text-rose-400 text-xs">↓ Salida</span>
+          </div>
+          <div id="metric-expense" class="text-2xl font-bold font-mono text-rose-400 mt-2">$0.00</div>
+          <div id="metric-expense-count" class="text-[11px] text-neutral-500 mt-1">0 transacciones</div>
+        </div>
+
+        <!-- Deuda Activa -->
+        <div class="glass-card p-5 rounded-2xl">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase text-neutral-400">Deuda Total</span>
+            <span class="text-amber-400 text-xs">⚠ Pasivo</span>
+          </div>
+          <div id="metric-debt" class="text-2xl font-bold font-mono text-amber-400 mt-2">$0.00</div>
+          <div id="metric-debt-payment" class="text-[11px] text-neutral-500 mt-1">$0.00 cuota estimada</div>
+        </div>
+
+        <!-- Total Ahorrado / Metas -->
+        <div class="glass-card p-5 rounded-2xl">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase text-neutral-400">Metas Ahorro</span>
+            <span class="text-violet-400 text-xs">🎯 Activo</span>
+          </div>
+          <div id="metric-savings" class="text-2xl font-bold font-mono text-violet-400 mt-2">$0.00</div>
+          <div id="metric-savings-progress" class="text-[11px] text-neutral-500 mt-1">0% completado</div>
+        </div>
+
+      </div>
+
+      <!-- App Tabs Navigation -->
+      <div class="border-b border-neutral-800 mb-6 flex space-x-2 sm:space-x-4 overflow-x-auto pb-1">
+        <button onclick="switchTab('trans')" id="tab-btn-trans" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-neutral-50 text-neutral-50 transition whitespace-nowrap">
+          💸 Transacciones (Ingresos & Gastos)
+        </button>
+        <button onclick="switchTab('debts')" id="tab-btn-debts" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-neutral-400 hover:text-neutral-200 transition whitespace-nowrap">
+          📉 Control de Deudas
+        </button>
+        <button onclick="switchTab('goals')" id="tab-btn-goals" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-neutral-400 hover:text-neutral-200 transition whitespace-nowrap">
+          🎯 Metas de Ahorro
+        </button>
+        <button onclick="switchTab('analytics')" id="tab-btn-analytics" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-neutral-400 hover:text-neutral-200 transition whitespace-nowrap">
+          📊 Reporte & Diagnóstico 50/30/20
+        </button>
+        <button onclick="switchTab('simulator')" id="tab-btn-simulator" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-neutral-400 hover:text-neutral-200 transition whitespace-nowrap">
+          🔮 Simulador FIRE & Retiro
+        </button>
+      </div>
+
+      <!-- TAB 1: TRANSACTIONS (INGRESOS & GASTOS) -->
+      <div id="tab-content-trans" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Formulario de Entrada -->
+        <div class="glass-card p-6 rounded-2xl lg:col-span-1 h-fit">
+          <h3 class="text-lg font-bold text-neutral-100 mb-4 flex items-center gap-2">
+            <span>+</span> Registrar Movimiento
+          </h3>
+          
+          <form id="trans-form" onsubmit="handleTransactionSubmit(event)" class="space-y-4">
+            <!-- Tipo: Ingreso o Gasto -->
+            <div class="grid grid-cols-2 gap-2 p-1 bg-neutral-900 rounded-xl border border-neutral-800">
+              <button type="button" onclick="setTransType('expense')" id="btn-type-expense" class="py-2 text-xs font-semibold rounded-lg bg-neutral-800 text-rose-400 transition shadow">
+                Gasto (-)
+              </button>
+              <button type="button" onclick="setTransType('income')" id="btn-type-income" class="py-2 text-xs font-semibold rounded-lg text-neutral-400 hover:text-neutral-200 transition">
+                Ingreso (+)
+              </button>
+            </div>
+
+            <!-- Concepto / Descripción -->
+            <div>
+              <label class="block text-xs font-mono text-neutral-400 mb-1">Descripción / Concepto</label>
+              <input type="text" id="trans-desc" required placeholder="Ej: Sueldo, Alquiler, Supermercado" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-neutral-500">
+            </div>
+
+            <!-- Monto -->
+            <div>
+              <label class="block text-xs font-mono text-neutral-400 mb-1">Monto (<span class="currency-symbol">$</span>)</label>
+              <input type="number" step="0.01" min="0.01" id="trans-amount" required placeholder="0.00" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-neutral-500">
+            </div>
+
+            <!-- Categoría -->
+            <div>
+              <label class="block text-xs font-mono text-neutral-400 mb-1">Categoría</label>
+              <select id="trans-cat" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm text-neutral-200 focus:outline-none focus:border-neutral-500">
+                <!-- Populated dynamically based on type -->
+              </select>
+            </div>
+
+            <!-- Fecha -->
+            <div>
+              <label class="block text-xs font-mono text-neutral-400 mb-1">Fecha</label>
+              <input type="date" id="trans-date" required class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-neutral-200 focus:outline-none focus:border-neutral-500">
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="w-full py-3 rounded-xl bg-neutral-50 text-neutral-950 font-semibold text-sm hover:bg-white transition active:scale-[0.99] mt-2">
+              Guardar Movimiento
+            </button>
+          </form>
+        </div>
+
+        <!-- Lista de Movimientos -->
+        <div class="glass-card p-6 rounded-2xl lg:col-span-2">
+          <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <h3 class="text-lg font-bold text-neutral-100">Historial de Movimientos</h3>
+            <div class="flex items-center gap-2">
+              <select id="filter-type" onchange="renderTransactions()" class="bg-neutral-900 border border-neutral-800 text-xs rounded-lg px-2.5 py-1.5 text-neutral-300">
+                <option value="all">Todos los tipos</option>
+                <option value="income">Solo Ingresos</option>
+                <option value="expense">Solo Gastos</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-neutral-800 text-neutral-500 text-xs font-mono uppercase">
+                  <th class="py-2.5 px-3">Fecha</th>
+                  <th class="py-2.5 px-3">Concepto</th>
+                  <th class="py-2.5 px-3">Categoría</th>
+                  <th class="py-2.5 px-3 text-right">Monto</th>
+                  <th class="py-2.5 px-3 text-center">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="trans-table-body" class="divide-y divide-neutral-850">
+                <!-- Transactions inserted by JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="trans-empty-state" class="py-12 text-center text-neutral-500 text-sm hidden">
+            No tienes transacciones registradas. Comienza agregando una o haz clic en "Cargar Demo".
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TAB 2: DEBTS (GESTIÓN DE DEUDAS) -->
+      <div id="tab-content-debts" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Formulario de Deuda -->
+        <div class="glass-card p-6 rounded-2xl lg:col-span-1 h-fit">
+          <h3 class="text-lg font-bold text-neutral-100 mb-1 flex items-center gap-2">
+            <span>📉</span> Registrar Pasivo / Deuda
+          </h3>
+          <p class="text-xs text-neutral-400 mb-4">Añade préstamos, tarjetas de crédito o cuotas pendientes.</p>
+          
+          <form id="debt-form" onsubmit="handleDebtSubmit(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-mono text-neutral-400 mb-1">Nombre de la Deuda / Entidad</label>
+              <input type="text" id="debt-name" required placeholder="Ej: Tarjeta Visa, Préstamo Auto" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-neutral-500">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-mono text-neutral-400 mb-1">Saldo Pendiente (<span class="currency-symbol">$</span>)</label>
+                <input type="number" step="0.01" min="0.01" id="debt-amount" required placeholder="5000" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-neutral-100 focus:outline-none focus:border-neutral-500">
+              </div>
+              <div>
+                <label class="block text-xs font-mono text-neutral-400 mb-1">Tasa Anual (% TNA)</label>
+                <input type="number" step="0.1" min="0" id="debt-rate" required placeholder="24.0" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-neutral-100 focus:outline-none focus:border-neutral-500">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-mono text-neutral-400 mb-1">Pago Mínimo (<span class="currency-symbol">$</span>/mes)</label>
+                <input type="number" step="0.01" min="0.01" id="debt-min-pay" required placeholder="250" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-neutral-100 focus:outline-none focus:border-neutral-500">
+              </div>
+              <div>
+                <label class="block text-xs font-mono text-neutral-400 mb-1">Vencimiento (Día del mes)</label>
+                <input type="number" min="1" max="31" id="debt-due" required placeholder="10" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-neutral-100 focus:outline-none focus:border-neutral-500">
+              </div>
+            </div>
+
+            <button type="submit" class="w-full py-3 rounded-xl bg-amber-400 text-neutral-950 font-semibold text-sm hover:bg-amber-300 transition active:scale-[0.99] mt-2">
+              Agregar Deuda al Plan
+            </button>
+          </form>
+        </div>
+
+        <!-- Estrategia y Lista de Deudas -->
+        <div class="glass-card p-6 rounded-2xl lg:col-span-2 space-y-6">
+          
+          <!-- Estrategia Selector -->
+          <div class="p-4 rounded-xl bg-neutral-900 border border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="text-sm font-bold text-neutral-100">Estrategia de Amortización Automática</div>
+              <div class="text-xs text-neutral-400">Selecciona el método matemático para liquidar más rápido.</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="setDebtStrategy('avalanche')" id="btn-strat-avalanche" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-neutral-50 text-neutral-950 transition">
+                ⚡ Avalancha (Mayor Interés)
+              </button>
+              <button onclick="setDebtStrategy('snowball')" id="btn-strat-snowball" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-neutral-800 text-neutral-300 hover:text-white transition">
+                ⛄ Bola de Nieve (Menor Monto)
+              </button>
+            </div>
+          </div>
+
+          <!-- Debt Items List -->
+          <div id="debts-list" class="space-y-4">
+            <!-- Debt cards inserted by JS -->
+          </div>
+
+          <div id="debts-empty-state" class="py-12 text-center text-neutral-500 text-sm hidden">
+            No tienes deudas registradas. ¡Excelente posición financiera!
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- TAB 3: GOALS (METAS DE AHORRO) -->
+      <div id="tab-content-goals" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Formulario Meta -->
+        <div class="glass-card p-6 rounded-2xl lg:col-span-1 h-fit">
+          <h3 class="text-lg font-bold text-neutral-100 mb-1 flex items-center gap-2">
+            <span>🎯</span> Nueva Meta de Ahorro
+          </h3>
+          <p class="text-xs text-neutral-400 mb-4">Define fondos de emergencia, viajes, vehículos o inversiones.</p>
+          
+          <form id="goal-form" onsubmit="handleGoalSubmit(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-mono text-neutral-400 mb-1">Nombre del Objetivo</label>
+              <input type="text" id="goal-name" required placeholder="Ej: Fondo de Emergencia (6 Meses)" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-neutral-500">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-mono text-neutral-400 mb-1">Monto Objetivo (<span class="currency-symbol">$</span>)</label>
+                <input type="number" step="0.01" min="1" id="goal-target" required placeholder="10000" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-neutral-100 focus:outline-none focus:border-neutral-500">
+              </div>
+              <div>
+                <label class="block text-xs font-mono text-neutral-400 mb-1">Ahorrado Actual (<span class="currency-symbol">$</span>)</label>
+                <input type="number" step="0.01" min="0" id="goal-current" required placeholder="2500" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-neutral-100 focus:outline-none focus:border-neutral-500">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-mono text-neutral-400 mb-1">Fecha Límite Deseada</label>
+              <input type="date" id="goal-deadline" required class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-neutral-200 focus:outline-none focus:border-neutral-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-mono text-neutral-400 mb-1">Icono / Categoría</label>
+              <select id="goal-icon" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm text-neutral-200 focus:outline-none focus:border-neutral-500">
+                <option value="🛡️">🛡️ Fondo de Emergencia</option>
+                <option value="✈️">✈️ Viaje o Vacaciones</option>
+                <option value="🚗">🚗 Vehículo o Movilidad</option>
+                <option value="🏡">🏡 Hogar / Vivienda</option>
+                <option value="📈">📈 Portafolio de Inversión</option>
+                <option value="💻">💻 Equipamiento Profesional</option>
+              </select>
+            </div>
+
+            <button type="submit" class="w-full py-3 rounded-xl bg-violet-500 text-white font-semibold text-sm hover:bg-violet-400 transition active:scale-[0.99] mt-2">
+              Crear Meta de Ahorro
+            </button>
+          </form>
+        </div>
+
+        <!-- Goals List -->
+        <div class="glass-card p-6 rounded-2xl lg:col-span-2 space-y-4">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-lg font-bold text-neutral-100">Tus Objetivos en Progreso</h3>
+            <span class="text-xs font-mono text-neutral-400" id="goals-summary-text">0 metas activas</span>
+          </div>
+
+          <div id="goals-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Goals cards inserted by JS -->
+          </div>
+
+          <div id="goals-empty-state" class="py-12 text-center text-neutral-500 text-sm hidden">
+            No tienes metas creadas. Define tu primer fondo de ahorro ahora.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TAB 4: ANALYTICS & 50/30/20 REPORT -->
+      <div id="tab-content-analytics" class="hidden space-y-8">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          <!-- 50% Necesidades -->
+          <div class="glass-card p-5 rounded-2xl">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-mono uppercase text-neutral-400">50% Necesidades</span>
+              <span id="pct-needs" class="text-xs font-mono px-2 py-0.5 rounded bg-neutral-800 text-neutral-300">0%</span>
+            </div>
+            <div id="val-needs" class="text-2xl font-bold font-mono text-neutral-100">$0.00</div>
+            <div class="w-full bg-neutral-800 h-2 rounded-full mt-3 overflow-hidden">
+              <div id="bar-needs" class="bg-blue-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <p class="text-[11px] text-neutral-500 mt-2">Alquiler, servicios, despensa básica y salud.</p>
+          </div>
+
+          <!-- 30% Deseos -->
+          <div class="glass-card p-5 rounded-2xl">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-mono uppercase text-neutral-400">30% Deseos</span>
+              <span id="pct-wants" class="text-xs font-mono px-2 py-0.5 rounded bg-neutral-800 text-neutral-300">0%</span>
+            </div>
+            <div id="val-wants" class="text-2xl font-bold font-mono text-neutral-100">$0.00</div>
+            <div class="w-full bg-neutral-800 h-2 rounded-full mt-3 overflow-hidden">
+              <div id="bar-wants" class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <p class="text-[11px] text-neutral-500 mt-2">Salidas, delivery, streaming, ropa y viajes.</p>
+          </div>
+
+          <!-- 20% Ahorro & Deuda -->
+          <div class="glass-card p-5 rounded-2xl">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-mono uppercase text-neutral-400">20% Ahorro / Deuda</span>
+              <span id="pct-savings" class="text-xs font-mono px-2 py-0.5 rounded bg-neutral-800 text-neutral-300">0%</span>
+            </div>
+            <div id="val-savings" class="text-2xl font-bold font-mono text-emerald-400">$0.00</div>
+            <div class="w-full bg-neutral-800 h-2 rounded-full mt-3 overflow-hidden">
+              <div id="bar-savings" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <p class="text-[11px] text-neutral-500 mt-2">Ahorro mensual, inversión y pago de pasivos.</p>
+          </div>
+
+        </div>
+
+        <!-- Canvas Chart & Breakdown -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div class="glass-card p-6 rounded-2xl">
+            <h4 class="text-base font-bold text-neutral-100 mb-4">Distribución de Gastos por Categoría</h4>
+            <div class="flex items-center justify-center p-4">
+              <canvas id="category-chart" width="280" height="280" class="max-w-[280px] max-h-[280px]"></canvas>
+            </div>
+          </div>
+
+          <div class="glass-card p-6 rounded-2xl">
+            <h4 class="text-base font-bold text-neutral-100 mb-4">Diagnóstico Automatizado</h4>
+            <div id="diagnostic-text" class="space-y-3 text-sm text-neutral-300 leading-relaxed">
+              <!-- Dynamically filled -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TAB 5: SIMULATOR FIRE & RETIRO -->
+      <div id="tab-content-simulator" class="hidden glass-card p-6 sm:p-8 rounded-2xl">
+        <div class="max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-900 border border-neutral-800 text-xs text-neutral-400 mb-4">
+            <span>🔥</span> Motor de Proyección de Independencia Financiera (FIRE)
+          </div>
+          <h3 class="text-2xl font-bold text-neutral-50">Calculadora de Interés Compuesto y Libertad Financiera</h3>
+          <p class="text-neutral-400 text-sm mt-1">Simula cómo tu capacidad de ahorro mensual actual se multiplica a lo largo del tiempo invirtiendo a una tasa conservadora.</p>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
+            <div>
+              <label class="block text-xs font-mono text-neutral-400 mb-1">Aporte Mensual (<span class="currency-symbol">$</span>)</label>
+              <input type="number" id="sim-monthly" oninput="runSimulation()" value="350" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-neutral-100">
+            </div>
+            <div>
+              <label class="block text-xs font-mono text-neutral-400 mb-1">Rendimiento Anual Estimado (%)</label>
+              <input type="number" id="sim-rate" oninput="runSimulation()" value="8.0" step="0.5" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-neutral-100">
+            </div>
+            <div>
+              <label class="block text-xs font-mono text-neutral-400 mb-1">Capital Inicial (<span class="currency-symbol">$</span>)</label>
+              <input type="number" id="sim-initial" oninput="runSimulation()" value="1000" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-neutral-100">
+            </div>
+          </div>
+
+          <!-- Projection Results Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-neutral-800">
+            <div class="p-4 rounded-xl bg-neutral-900 border border-neutral-800">
+              <div class="text-xs font-mono text-neutral-400 uppercase">Proyección a 3 Años</div>
+              <div id="sim-res-3y" class="text-xl font-bold font-mono text-neutral-100 mt-1">$0.00</div>
+              <div id="sim-int-3y" class="text-[11px] text-emerald-400 mt-0.5">+$0 de puro interés</div>
+            </div>
+            <div class="p-4 rounded-xl bg-neutral-900 border border-neutral-800">
+              <div class="text-xs font-mono text-neutral-400 uppercase">Proyección a 7 Años</div>
+              <div id="sim-res-7y" class="text-xl font-bold font-mono text-neutral-100 mt-1">$0.00</div>
+              <div id="sim-int-7y" class="text-[11px] text-emerald-400 mt-0.5">+$0 de puro interés</div>
+            </div>
+            <div class="p-4 rounded-xl bg-neutral-900 border border-emerald-900/60 bg-emerald-950/20">
+              <div class="text-xs font-mono text-emerald-400 uppercase">Proyección a 15 Años</div>
+              <div id="sim-res-15y" class="text-xl font-bold font-mono text-emerald-300 mt-1">$0.00</div>
+              <div id="sim-int-15y" class="text-[11px] text-emerald-400 mt-0.5">+$0 de puro interés</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= STACKING CARDS (ESPECIALIZACIÓN ESTILO DAGATEK) ================= -->
+  <section id="services" class="py-24 bg-neutral-900/40 border-b border-neutral-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="mb-16">
+        <span class="text-xs font-mono uppercase tracking-widest text-neutral-400">Arquitectura de Módulos</span>
+        <h2 class="text-3xl sm:text-5xl font-bold text-neutral-50 tracking-tight mt-2">
+          Finanzas sin fricción. Estructura sin improvisación.
+        </h2>
+      </div>
+
+      <div class="space-y-12">
+        
+        <!-- Service Card 1 -->
+        <div class="sticky-card glass-card p-8 sm:p-12 rounded-3xl">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <div class="w-8 h-1 bg-neutral-50 mb-6"></div>
+              <h3 class="text-2xl sm:text-3xl font-bold text-neutral-50">01 · Flujo de Caja & Presupuesto Base Cero</h3>
+              <p class="text-neutral-400 mt-4 leading-relaxed">
+                Transformamos el desorden de gastos invisibles en trazabilidad milimétrica. Cada moneda asignada con propósito antes de que empiece el mes para evitar fugas de capital no planificadas.
+              </p>
+              <div class="flex flex-wrap gap-2 mt-6">
+                <span class="px-3 py-1 rounded-full bg-neutral-800 text-xs text-neutral-300 font-mono">Categorización Modular</span>
+                <span class="px-3 py-1 rounded-full bg-neutral-800 text-xs text-neutral-300 font-mono">Regla 50/30/20</span>
+                <span class="px-3 py-1 rounded-full bg-neutral-800 text-xs text-neutral-300 font-mono">Balance Neto Real-Time</span>
+              </div>
+            </div>
+            <div class="p-6 rounded-2xl bg-neutral-950 border border-neutral-800/80 font-mono text-xs text-neutral-400 space-y-2">
+              <div class="text-neutral-500">// Mapeo Operativo Mensual</div>
+              <div class="text-emerald-400">+ Ingresos Totales: Consolidado seguro</div>
+              <div class="text-rose-400">- Costos Operativos Fijos: Auditados al 100%</div>
+              <div class="text-violet-400">= Excedente Libre: Dirigido a Ahorro / Deuda</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service Card 2 -->
+        <div class="sticky-card glass-card p-8 sm:p-12 rounded-3xl" style="top: 110px;">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <div class="w-8 h-1 bg-amber-400 mb-6"></div>
+              <h3 class="text-2xl sm:text-3xl font-bold text-neutral-50">02 · Extinción Quirúrgica de Deudas</h3>
+              <p class="text-neutral-400 mt-4 leading-relaxed">
+                De la asfixia del pago mínimo al desendeudamiento planificado. Nuestro algoritmo compara el impacto del método Avalancha (matemático de alto interés) frente a Bola de Nieve (victorias psicológicas rápidas).
+              </p>
+              <div class="flex flex-wrap gap-2 mt-6">
+                <span class="px-3 py-1 rounded-full bg-neutral-800 text-xs text-neutral-300 font-mono">Método Avalancha</span>
+                <span class="px-3 py-1 rounded-full bg-neutral-800 text-xs text-neutral-300 font-mono">Método Bola de Nieve</span>
+                <span class="px-3 py-1 rounded-full bg-neutral-800 text-xs text-neutral-300 font-mono">Ahorro en Intereses</span>
+              </div>
+            </div>
+            <div class="p-6 rounded-2xl bg-neutral-950 border border-neutral-800/80 font-mono text-xs text-neutral-400 space-y-2">
+              <div class="text-neutral-500">// Algoritmo de Amortización</div>
+              <div class="text-amber-400">Tasa de Aceleración: 2.4x vs Mínimo Bancario</div>
+              <div class="text-neutral-300">Meses Proyectados para Deuda Cero: -65%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service Card 3 -->
+        <div class="sticky-card glass-card p-8 sm:p-12 rounded-3xl" style="top: 130px;">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <div class="w-8 h-1 bg-violet-400 mb-6"></div>
+              <h3 class="text-2xl sm:text-3xl font-bold text-neutral-50">03 · Objetivos de Ahorro & Libertad FIRE</h3>
+              <p class="text-neutral-400 mt-4 leading-relaxed">
+                Visualización de hitos financieros con cálculo de aportes periódicos requeridos. Proyectamos el interés compuesto para que tu dinero trabaje para ti a largo plazo.
+              </p>
+              <div class="flex flex-wrap gap-2 mt-6">
+                <span class="px-3 py-1 rounded-full bg-neutral-800 text-xs text-neutral-300 font-mono">Fondo de Emergencia</span>
+                <span class="px-3 py-1 rounded-full bg-neutral-800 text-xs text-neutral-300 font-mono">Tasa de Retiro Seguro (4%)</span>
+                <span class="px-3 py-1 rounded-full bg-neutral-800 text-xs text-neutral-300 font-mono">Interés Compuesto</span>
+              </div>
+            </div>
+            <div class="p-6 rounded-2xl bg-neutral-950 border border-neutral-800/80 font-mono text-xs text-neutral-400 space-y-2">
+              <div class="text-neutral-500">// Meta Financiera Global</div>
+              <div class="text-violet-300">Fondo de Seguridad: 6 meses de gastos cubiertos</div>
+              <div class="text-emerald-400">Poder de Ahorro Compuesto: Activo</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= MONETIZACIÓN & MARKETPLACE DE PLANTILLAS PRO ================= -->
+  <section id="templates" class="py-24 bg-neutral-950 border-b border-neutral-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section header -->
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-mono uppercase tracking-widest text-neutral-400">Monetización & Plantillas</span>
+        <h2 class="text-3xl sm:text-5xl font-bold text-neutral-50 tracking-tight mt-2">
+          Plantillas Financieras Pro
+        </h2>
+        <p class="text-neutral-400 text-base sm:text-lg mt-4">
+          Descarga o sincroniza hojas de cálculo de grado profesional en Excel y Google Sheets listas para usar con fórmulas automáticas.
+        </p>
+      </div>
+
+      <!-- Templates Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Template 1 -->
+        <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800/40">Inversión & FIRE</span>
+              <span class="text-lg font-bold font-mono text-neutral-100">$4.99</span>
+            </div>
+            <h3 class="text-base font-bold text-neutral-50">Plantilla Modelo FIRE</h3>
+            <p class="text-xs text-neutral-400 mt-2 leading-relaxed">
+              Calculadora de retiro temprano, matriz de costos pasivos y regla del 4% para alcanzar la libertad financiera.
+            </p>
+            <ul class="mt-4 space-y-1.5 text-xs text-neutral-300 font-mono">
+              <li>✓ Simulación a 5, 10 y 20 años</li>
+              <li>✓ Matriz de rendimiento neto</li>
+              <li>✓ Formato Excel & Google Sheets</li>
+            </ul>
+          </div>
+          <button onclick="openCheckoutModal('Plantilla Modelo FIRE', '$4.99')" class="mt-6 w-full py-2.5 rounded-xl bg-neutral-50 text-neutral-950 text-xs font-bold hover:bg-white transition active:scale-[0.98]">
+            Adquirir Plantilla
+          </button>
+        </div>
+
+        <!-- Template 2 -->
+        <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-blue-950 text-blue-400 border border-blue-800/40">Presupuesto Core</span>
+              <span class="text-lg font-bold font-mono text-neutral-100">$2.99</span>
+            </div>
+            <h3 class="text-base font-bold text-neutral-50">Sistema de Sobres 50/30/20</h3>
+            <p class="text-xs text-neutral-400 mt-2 leading-relaxed">
+              División matemática automática de ingresos mensuales: 50% Necesidades, 30% Deseos y 20% Ahorro.
+            </p>
+            <ul class="mt-4 space-y-1.5 text-xs text-neutral-300 font-mono">
+              <li>✓ Gráficos de barras automáticos</li>
+              <li>✓ Alertas de desviación mensual</li>
+              <li>✓ Fácil para principiantes</li>
+            </ul>
+          </div>
+          <button onclick="openCheckoutModal('Sistema de Sobres 50/30/20', '$2.99')" class="mt-6 w-full py-2.5 rounded-xl bg-neutral-50 text-neutral-950 text-xs font-bold hover:bg-white transition active:scale-[0.98]">
+            Adquirir Plantilla
+          </button>
+        </div>
+
+        <!-- Template 3 -->
+        <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-amber-950 text-amber-400 border border-amber-800/40">Desendeudamiento</span>
+              <span class="text-lg font-bold font-mono text-neutral-100">$3.99</span>
+            </div>
+            <h3 class="text-base font-bold text-neutral-50">Plan Deuda Cero</h3>
+            <p class="text-xs text-neutral-400 mt-2 leading-relaxed">
+              Cronograma de amortización con comparador simultáneo Avalancha vs. Bola de Nieve y cálculo de intereses ahorrados.
+            </p>
+            <ul class="mt-4 space-y-1.5 text-xs text-neutral-300 font-mono">
+              <li>✓ Calendario de cuotas</li>
+              <li>✓ Comparador de estrategias</li>
+              <li>✓ Tabla de ahorro en interés</li>
+            </ul>
+          </div>
+          <button onclick="openCheckoutModal('Plan Deuda Cero', '$3.99')" class="mt-6 w-full py-2.5 rounded-xl bg-neutral-50 text-neutral-950 text-xs font-bold hover:bg-white transition active:scale-[0.98]">
+            Adquirir Plantilla
+          </button>
+        </div>
+
+        <!-- Template 4 -->
+        <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-violet-950 text-violet-400 border border-violet-800/40">Familia & Pareja</span>
+              <span class="text-lg font-bold font-mono text-neutral-100">$5.99</span>
+            </div>
+            <h3 class="text-base font-bold text-neutral-50">Presupuesto Familiar Multifuente</h3>
+            <p class="text-xs text-neutral-400 mt-2 leading-relaxed">
+              Consolidación de ingresos de múltiples fuentes, división proporcional de gastos y fondo de contingencia.
+            </p>
+            <ul class="mt-4 space-y-1.5 text-xs text-neutral-300 font-mono">
+              <li>✓ División equitativa de cuentas</li>
+              <li>✓ Control de servicios y cuotas</li>
+              <li>✓ Exportable a PDF con un clic</li>
+            </ul>
+          </div>
+          <button onclick="openCheckoutModal('Presupuesto Familiar Multifuente', '$5.99')" class="mt-6 w-full py-2.5 rounded-xl bg-neutral-50 text-neutral-950 text-xs font-bold hover:bg-white transition active:scale-[0.98]">
+            Adquirir Plantilla
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= PLANES & PRECIOS (SUSCRIPCIÓN ECONÓMICA) ================= -->
+  <section id="pricing" class="py-24 bg-neutral-900/30 border-b border-neutral-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-mono uppercase tracking-widest text-neutral-400">Planes Simples & Transparentes</span>
+        <h2 class="text-3xl sm:text-5xl font-bold text-neutral-50 tracking-tight mt-2">
+          Invierte en tu tranquilidad financiera
+        </h2>
+        <p class="text-neutral-400 text-base sm:text-lg mt-4">
+          Comienza 100% gratis u obtén sincronización avanzada y todas las plantillas incluidas con nuestra suscripción económica.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        
+        <!-- Plan 1: Core / Free -->
+        <div class="glass-card p-8 rounded-3xl flex flex-col justify-between">
+          <div>
+            <span class="text-xs font-mono uppercase text-neutral-400">Plan Starter</span>
+            <div class="text-3xl font-bold font-mono text-neutral-50 mt-2">$0 <span class="text-xs text-neutral-500 font-normal">/ para siempre</span></div>
+            <p class="text-xs text-neutral-400 mt-2">Perfecto para tomar el control inicial de tus gastos.</p>
+            
+            <ul class="mt-6 space-y-3 text-xs text-neutral-300">
+              <li class="flex items-center gap-2">✓ Registro ilimitado de movimientos</li>
+              <li class="flex items-center gap-2">✓ Almacenamiento local seguro en navegador</li>
+              <li class="flex items-center gap-2">✓ Hasta 2 metas de ahorro activas</li>
+              <li class="flex items-center gap-2">✓ Calculadora básica de deudas</li>
+              <li class="flex items-center gap-2 text-neutral-500">✗ Sin sincronización en la nube</li>
+              <li class="flex items-center gap-2 text-neutral-500">✗ Sin plantillas Pro incluidas</li>
+            </ul>
+          </div>
+          <a href="#app-dashboard" class="mt-8 block text-center w-full py-3 rounded-xl bg-neutral-800 text-neutral-200 text-xs font-bold hover:bg-neutral-700 transition">
+            Usar Gratis Ahora
+          </a>
+        </div>
+
+        <!-- Plan 2: Pro Mensual (Destacado) -->
+        <div class="glass-card p-8 rounded-3xl flex flex-col justify-between border-2 border-neutral-50 relative bg-neutral-900 shadow-2xl">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-neutral-50 text-neutral-950 font-mono text-[10px] uppercase font-bold px-3 py-0.5 rounded-full shadow">
+            Más Popular
+          </div>
+          <div>
+            <span class="text-xs font-mono uppercase text-neutral-400">Plan Pro Suscripción</span>
+            <div class="text-3xl font-bold font-mono text-neutral-50 mt-2">$2.99 <span class="text-xs text-neutral-400 font-normal">/ mes</span></div>
+            <p class="text-xs text-neutral-300 mt-2">Menos de un café al mes para dominar tus finanzas.</p>
+            
+            <ul class="mt-6 space-y-3 text-xs text-neutral-200">
+              <li class="flex items-center gap-2">✓ <strong>Todo lo del plan Starter</strong></li>
+              <li class="flex items-center gap-2">✓ <strong>Acceso a TODAS las Plantillas Pro</strong></li>
+              <li class="flex items-center gap-2">✓ Metas de ahorro y deudas ilimitadas</li>
+              <li class="flex items-center gap-2">✓ Exportación a Excel y reportes PDF automáticos</li>
+              <li class="flex items-center gap-2">✓ Diagnóstico inteligente con IA</li>
+              <li class="flex items-center gap-2">✓ Sincronización multidispositivo</li>
+            </ul>
+          </div>
+          <button onclick="openCheckoutModal('Suscripción Pro Mensual', '$2.99/mes')" class="mt-8 w-full py-3.5 rounded-xl bg-neutral-50 text-neutral-950 text-xs font-bold hover:bg-white transition shadow-lg active:scale-[0.98]">
+            Comenzar Suscripción Pro
+          </button>
+        </div>
+
+        <!-- Plan 3: Lifetime -->
+        <div class="glass-card p-8 rounded-3xl flex flex-col justify-between">
+          <div>
+            <span class="text-xs font-mono uppercase text-neutral-400">Plan Lifetime All-Access</span>
+            <div class="text-3xl font-bold font-mono text-neutral-50 mt-2">$19.99 <span class="text-xs text-neutral-500 font-normal">/ pago único</span></div>
+            <p class="text-xs text-neutral-400 mt-2">Paga una sola vez y ten acceso perpetuo de por vida.</p>
+            
+            <ul class="mt-6 space-y-3 text-xs text-neutral-300">
+              <li class="flex items-center gap-2">✓ <strong>Acceso perpetuo de por vida</strong></li>
+              <li class="flex items-center gap-2">✓ Todas las plantillas actuales y futuras</li>
+              <li class="flex items-center gap-2">✓ Sin cobros mensuales recurrentes</li>
+              <li class="flex items-center gap-2">✓ Actualizaciones gratuitas garantizadas</li>
+              <li class="flex items-center gap-2">✓ Soporte VIP directo por WhatsApp</li>
+            </ul>
+          </div>
+          <button onclick="openCheckoutModal('Plan Lifetime All-Access', '$19.99 (Pago Único)')" class="mt-8 w-full py-3 rounded-xl bg-neutral-800 text-neutral-200 text-xs font-bold hover:bg-neutral-700 transition">
+            Comprar Acceso de por Vida
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= METODOLOGÍA (01 a 04 ESTILO DAGATEK) ================= -->
+  <section id="methodology" class="py-24 bg-neutral-950 border-b border-neutral-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="max-w-3xl mb-16">
+        <span class="text-xs font-mono uppercase tracking-widest text-neutral-400">Metodología Financiera</span>
+        <h2 class="text-3xl sm:text-5xl font-bold text-neutral-50 tracking-tight mt-2">
+          De la intuición a la certeza matemática en 4 pasos.
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="text-3xl font-black font-mono text-neutral-500 mb-4">01</div>
+          <h3 class="text-base font-bold text-neutral-50">Diagnóstico de Fuga</h3>
+          <p class="text-xs text-neutral-400 mt-2 leading-relaxed">
+            Auditamos cada microgasto y suscripción fantasma para detectar exactamente por dónde se escapa tu excedente.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="text-3xl font-black font-mono text-neutral-500 mb-4">02</div>
+          <h3 class="text-base font-bold text-neutral-50">Blindaje de Reserva</h3>
+          <p class="text-xs text-neutral-400 mt-2 leading-relaxed">
+            Construcción prioritaria de tu Fondo de Emergencia (3 a 6 meses) para no volver a recurrir a deuda cara.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="text-3xl font-black font-mono text-neutral-500 mb-4">03</div>
+          <h3 class="text-base font-bold text-neutral-50">Amortización Acelerada</h3>
+          <p class="text-xs text-neutral-400 mt-2 leading-relaxed">
+            Aplicamos el método Avalancha para extinguir pasivos con el menor costo de interés financiero posible.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="text-3xl font-black font-mono text-neutral-500 mb-4">04</div>
+          <h3 class="text-base font-bold text-neutral-50">Crecimiento Compuesto</h3>
+          <p class="text-xs text-neutral-400 mt-2 leading-relaxed">
+            Canalizamos el excedente libre hacia metas de inversión de largo plazo con proyecciones claras hacia el retiro FIRE.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= CASOS DE ÉXITO CUANTIFICADOS ================= -->
+  <section class="py-20 bg-neutral-900/30 border-b border-neutral-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="max-w-3xl mb-12">
+        <span class="text-xs font-mono uppercase tracking-widest text-neutral-400">Resultados Comprobados</span>
+        <h2 class="text-2xl sm:text-4xl font-bold text-neutral-50 tracking-tight mt-1">
+          Impacto medible en la economía personal
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="text-2xl font-bold font-mono text-emerald-400">+$6,400 USD</div>
+          <div class="text-sm font-semibold text-neutral-100 mt-1">Ahorro anual consolidado</div>
+          <p class="text-xs text-neutral-400 mt-2">"Eliminé 4 suscripciones que ni usaba y ajusté mi presupuesto 50/30/20. En 10 meses armé mi fondo de emergencia completo."</p>
+          <div class="mt-4 text-[11px] font-mono text-neutral-500">— Marcos V., Desarrollador Freelance</div>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="text-2xl font-bold font-mono text-emerald-400">-70% Tiempo</div>
+          <div class="text-sm font-semibold text-neutral-100 mt-1">Para liquidar tarjetas de crédito</div>
+          <p class="text-xs text-neutral-400 mt-2">"El simulador de avalancha me ahorró más de $1,800 en puros intereses bancarios. Hoy estoy 100% libre de deudas."</p>
+          <div class="mt-4 text-[11px] font-mono text-neutral-500">— Carolina M., Diseñadora UX</div>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="text-2xl font-bold font-mono text-emerald-400">100% Adopción</div>
+          <div class="text-sm font-semibold text-neutral-100 mt-1">Presupuesto familiar en pareja</div>
+          <p class="text-xs text-neutral-400 mt-2">"Compramos la plantilla familiar y ahora sabemos exactamente cuánto aporta cada uno a los gastos comunes sin discusiones."</p>
+          <div class="mt-4 text-[11px] font-mono text-neutral-500">— Julián & Sofía, Córdoba</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= MODAL DE CHECKOUT / ADQUISICIÓN INTERACTIVO ================= -->
+  <div id="checkout-modal" onclick="handleModalBackdropClick(event)" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="glass-card bg-neutral-900 border border-neutral-700 max-w-md w-full p-6 sm:p-8 rounded-3xl shadow-2xl relative" onclick="event.stopPropagation()">
+      
+      <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 text-neutral-400 hover:text-white text-xl">✕</button>
+
+      <div class="text-xs font-mono uppercase text-emerald-400 mb-1">Pasarela de Adquisición</div>
+      <h3 id="modal-item-title" class="text-xl font-bold text-neutral-50">Plantilla Pro</h3>
+      <div id="modal-item-price" class="text-2xl font-mono font-bold text-neutral-100 my-2">$4.99</div>
+
+      <p class="text-xs text-neutral-400 mb-6">
+        Recibe acceso inmediato con descarga instantánea y soporte técnico incluido.
+      </p>
+
+      <form onsubmit="handleCheckoutSimulate(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-mono text-neutral-400 mb-1">Tu Nombre</label>
+          <input type="text" required placeholder="Juan Pérez" class="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-neutral-500">
+        </div>
+        <div>
+          <label class="block text-xs font-mono text-neutral-400 mb-1">Correo Electrónico (para recibir la plantilla)</label>
+          <input type="email" required placeholder="juan@ejemplo.com" class="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm text-neutral-100 focus:outline-none focus:border-neutral-500">
+        </div>
+        <div>
+          <label class="block text-xs font-mono text-neutral-400 mb-1">Método de Pago</label>
+          <select class="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-sm text-neutral-200">
+            <option>💳 Tarjeta de Débito / Crédito (Stripe)</option>
+            <option>⚡ Mercado Pago / Transferencia Bancaria</option>
+            <option>🪙 Cripto (USDT / USDC)</option>
+            <option>🌐 PayPal</option>
+          </select>
+        </div>
+
+        <button type="submit" class="w-full py-3.5 rounded-xl bg-neutral-50 text-neutral-950 font-bold text-sm hover:bg-white transition active:scale-[0.98] shadow-lg">
+          Simular Confirmación de Pago
+        </button>
+      </form>
+
+      <div id="modal-success-msg" class="hidden mt-4 p-4 rounded-xl bg-emerald-950/80 border border-emerald-800 text-emerald-300 text-xs text-center font-mono">
+        🎉 ¡Pago simulado con éxito! Se ha habilitado la descarga y enviado a tu correo.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="mt-auto bg-neutral-950 border-t border-neutral-900 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        
+        <div class="md:col-span-2">
+          <span class="text-2xl font-black tracking-tighter lowercase text-neutral-50 font-mono">
+            kapital<sup class="text-[0.45em] text-neutral-400 font-normal ml-0.5">®</sup>
+          </span>
+          <p class="text-xs text-neutral-400 mt-3 max-w-sm leading-relaxed">
+            Plataforma modular para el control de gastos personales, extinción de pasivos y metas de ahorro. Diseñada con la arquitectura de simplicidad radical de Dagatek.
+          </p>
+          <div class="mt-4 text-xs text-neutral-500 font-mono">
+            Córdoba, Argentina · hola@kapitalfinance.io
+          </div>
+        </div>
+
+        <div>
+          <div class="text-xs font-mono uppercase text-neutral-300 mb-3">Navegación</div>
+          <ul class="space-y-2 text-xs text-neutral-400">
+            <li><a href="#app-dashboard" class="hover:text-white transition">App Gestor</a></li>
+            <li><a href="#services" class="hover:text-white transition">Especialización</a></li>
+            <li><a href="#templates" class="hover:text-white transition">Plantillas Pro</a></li>
+            <li><a href="#pricing" class="hover:text-white transition">Planes & Precios</a></li>
+            <li><a href="#methodology" class="hover:text-white transition">Metodología</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="text-xs font-mono uppercase text-neutral-300 mb-3">Legal & Privacidad</div>
+          <ul class="space-y-2 text-xs text-neutral-400">
+            <li><a href="#" class="hover:text-white transition">Términos de Servicio</a></li>
+            <li><a href="#" class="hover:text-white transition">Política de Privacidad</a></li>
+            <li><a href="#" class="hover:text-white transition">Almacenamiento Local</a></li>
+          </ul>
+          <div class="mt-4 text-[11px] text-neutral-500">
+            © 2026 KAPITAL®. Todos los derechos reservados.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= CLIENT JAVASCRIPT LOGIC ================= -->
+  <script>
+    // State management
+    let state = {
+      currency: 'USD',
+      currencySymbols: { USD: '$', ARS: '$', EUR: '€', MXN: '$' },
+      currentTransType: 'expense',
+      debtStrategy: 'avalanche',
+      transactions: [],
+      debts: [],
+      goals: [],
+    };
+
+    const EXPENSE_CATEGORIES = [
+      { val: "Vivienda & Servicios (Necesidad)", label: "🏠 Vivienda & Servicios (Necesidad)" },
+      { val: "Alimentación (Necesidad)", label: "🛒 Alimentación & Super (Necesidad)" },
+      { val: "Transporte (Necesidad)", label: "🚗 Transporte & Movilidad (Necesidad)" },
+      { val: "Salud & Seguros (Necesidad)", label: "🏥 Salud & Cuidado (Necesidad)" },
+      { val: "Ocio & Entretenimiento (Deseo)", label: "🍿 Ocio & Salidas (Deseo)" },
+      { val: "Compras & Ropa (Deseo)", label: "🛍️ Compras & Caprichos (Deseo)" },
+      { val: "Suscripciones (Deseo)", label: "📱 Suscripciones & Streaming (Deseo)" },
+      { val: "Educación & Cursos", label: "📚 Educación & Libros" },
+      { val: "Otro Gasto", label: "📦 Otro Gasto" }
+    ];
+
+    const INCOME_CATEGORIES = [
+      { val: "Salario & Empleo (Ingreso)", label: "💼 Salario / Sueldo Principal (Ingreso)" },
+      { val: "Freelance & Negocios (Ingreso)", label: "💻 Freelance / Proyectos (Ingreso)" },
+      { val: "Inversiones & Pasivos (Ingreso)", label: "📈 Inversiones & Rendimientos (Ingreso)" },
+      { val: "Ventas & Reembolsos (Ingreso)", label: "💰 Ventas & Reembolsos (Ingreso)" },
+      { val: "Otro Ingreso", label: "💵 Otro Ingreso" }
+    ];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      const transDateInput = document.getElementById('trans-date');
+      if (transDateInput) transDateInput.value = today;
+
+      // Close modal on Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeCheckoutModal();
+      });
+
+      updateCategoryDropdown();
+      loadStateFromStorage();
+      if (state.transactions.length === 0 && state.debts.length === 0 && state.goals.length === 0) {
+        loadSampleData(false);
+      } else {
+        renderAll();
+      }
+      runSimulation();
+    });
+
+    // Toast Notification System
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const colorBorder = type === 'success' ? 'border-emerald-500 bg-emerald-950/90 text-emerald-200' :
+                          type === 'error' ? 'border-rose-500 bg-rose-950/90 text-rose-200' :
+                          'border-neutral-700 bg-neutral-900/90 text-neutral-100';
+      
+      toast.className = `toast-msg px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md text-xs font-mono flex items-center gap-2.5 ${colorBorder}`;
+      toast.innerHTML = `
+        <span>${type === 'success' ? '✓' : type === 'error' ? '⚠' : 'ℹ'}</span>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+
+      setTimeout(() => toast.classList.add('show'), 10);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Local Storage
+    function saveStateToStorage() {
+      localStorage.setItem('kapital_state', JSON.stringify(state));
+    }
+
+    function loadStateFromStorage() {
+      const saved = localStorage.getItem('kapital_state');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          state = { ...state, ...parsed };
+          document.getElementById('currency-select').value = state.currency || 'USD';
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    function changeCurrency(curr) {
+      state.currency = curr;
+      saveStateToStorage();
+      document.querySelectorAll('.currency-symbol').forEach(el => {
+        el.textContent = state.currencySymbols[curr] || '$';
+      });
+      renderAll();
+      runSimulation();
+      showToast(`Moneda cambiada a ${curr}`, 'info');
+    }
+
+    function formatMoney(amount) {
+      const sym = state.currencySymbols[state.currency] || '$';
+      return `${sym}${Number(amount || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return dateStr;
+    }
+
+    // Tabs
+    function switchTab(tabId) {
+      const tabs = ['trans', 'debts', 'goals', 'analytics', 'simulator'];
+      tabs.forEach(t => {
+        const content = document.getElementById(`tab-content-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (content && btn) {
+          if (t === tabId) {
+            content.classList.remove('hidden');
+            btn.classList.add('border-neutral-50', 'text-neutral-50');
+            btn.classList.remove('border-transparent', 'text-neutral-400');
+          } else {
+            content.classList.add('hidden');
+            btn.classList.remove('border-neutral-50', 'text-neutral-50');
+            btn.classList.add('border-transparent', 'text-neutral-400');
+          }
+        }
+      });
+
+      if (tabId === 'analytics') {
+        renderCategoryChart();
+      }
+    }
+
+    // Dynamic Category Dropdown
+    function updateCategoryDropdown() {
+      const select = document.getElementById('trans-cat');
+      if (!select) return;
+      select.innerHTML = '';
+      const list = state.currentTransType === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+      list.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.val;
+        opt.textContent = c.label;
+        select.appendChild(opt);
+      });
+    }
+
+    // Transactions Logic
+    function setTransType(type) {
+      state.currentTransType = type;
+      const btnExp = document.getElementById('btn-type-expense');
+      const btnInc = document.getElementById('btn-type-income');
+      if (type === 'expense') {
+        btnExp.className = 'py-2 text-xs font-semibold rounded-lg bg-neutral-800 text-rose-400 transition shadow';
+        btnInc.className = 'py-2 text-xs font-semibold rounded-lg text-neutral-400 hover:text-neutral-200 transition';
+      } else {
+        btnInc.className = 'py-2 text-xs font-semibold rounded-lg bg-neutral-800 text-emerald-400 transition shadow';
+        btnExp.className = 'py-2 text-xs font-semibold rounded-lg text-neutral-400 hover:text-neutral-200 transition';
+      }
+      updateCategoryDropdown();
+    }
+
+    function handleTransactionSubmit(e) {
+      e.preventDefault();
+      const desc = document.getElementById('trans-desc').value.trim();
+      const amount = parseFloat(document.getElementById('trans-amount').value);
+      const cat = document.getElementById('trans-cat').value;
+      const date = document.getElementById('trans-date').value;
+
+      if (!desc || isNaN(amount) || amount <= 0) {
+        showToast('Por favor ingresa una descripción y monto válido.', 'error');
+        return;
+      }
+
+      const newTrans = {
+        id: Date.now().toString(),
+        type: state.currentTransType,
+        desc,
+        amount,
+        cat,
+        date
+      };
+
+      state.transactions.unshift(newTrans);
+      saveStateToStorage();
+      renderAll();
+
+      document.getElementById('trans-desc').value = '';
+      document.getElementById('trans-amount').value = '';
+      showToast(`${state.currentTransType === 'income' ? 'Ingreso' : 'Gasto'} registrado correctamente`, 'success');
+    }
+
+    function deleteTransaction(id) {
+      state.transactions = state.transactions.filter(t => t.id !== id);
+      saveStateToStorage();
+      renderAll();
+      showToast('Movimiento eliminado', 'info');
+    }
+
+    function renderTransactions() {
+      const filter = document.getElementById('filter-type').value;
+      const tbody = document.getElementById('trans-table-body');
+      const emptyState = document.getElementById('trans-empty-state');
+      
+      const filtered = state.transactions.filter(t => {
+        if (filter === 'all') return true;
+        return t.type === filter;
+      });
+
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        filtered.forEach(t => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-neutral-900/60 transition';
+          const isIncome = t.type === 'income';
+          tr.innerHTML = `
+            <td class="py-3 px-3 text-xs font-mono text-neutral-400">${formatDate(t.date)}</td>
+            <td class="py-3 px-3 text-neutral-200 font-medium">${t.desc}</td>
+            <td class="py-3 px-3"><span class="text-[11px] px-2 py-0.5 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-300 font-mono">${t.cat}</span></td>
+            <td class="py-3 px-3 text-right font-mono font-bold ${isIncome ? 'text-emerald-400' : 'text-rose-400'}">
+              ${isIncome ? '+' : '-'}${formatMoney(t.amount)}
+            </td>
+            <td class="py-3 px-3 text-center">
+              <button onclick="deleteTransaction('${t.id}')" title="Eliminar" class="text-neutral-500 hover:text-rose-400 text-xs px-2 py-1 rounded transition">✕</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    }
+
+    // Debts Logic
+    function handleDebtSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('debt-name').value.trim();
+      const amount = parseFloat(document.getElementById('debt-amount').value);
+      const rate = parseFloat(document.getElementById('debt-rate').value);
+      const minPay = parseFloat(document.getElementById('debt-min-pay').value);
+      const due = parseInt(document.getElementById('debt-due').value);
+
+      if (!name || isNaN(amount) || isNaN(rate) || isNaN(minPay)) {
+        showToast('Completa todos los campos de la deuda.', 'error');
+        return;
+      }
+
+      const newDebt = {
+        id: Date.now().toString(),
+        name,
+        amount,
+        initialAmount: amount,
+        rate,
+        minPay,
+        due
+      };
+
+      state.debts.push(newDebt);
+      saveStateToStorage();
+      renderAll();
+
+      document.getElementById('debt-form').reset();
+      showToast('Deuda agregada al plan de amortización', 'success');
+    }
+
+    function makeDebtPayment(id, paymentAmount) {
+      const debt = state.debts.find(d => d.id === id);
+      if (!debt) return;
+      debt.initialAmount = debt.initialAmount || debt.amount;
+      debt.amount = Math.max(0, debt.amount - paymentAmount);
+      
+      saveStateToStorage();
+      renderAll();
+
+      if (debt.amount === 0) {
+        showToast(`🎉 ¡Felicidades! Has liquidado completamente la deuda: ${debt.name}`, 'success');
+      } else {
+        showToast(`Cuota de ${formatMoney(paymentAmount)} abonada. Saldo restante: ${formatMoney(debt.amount)}`, 'info');
+      }
+    }
+
+    function deleteDebt(id) {
+      state.debts = state.debts.filter(d => d.id !== id);
+      saveStateToStorage();
+      renderAll();
+      showToast('Deuda eliminada del registro', 'info');
+    }
+
+    function setDebtStrategy(strat) {
+      state.debtStrategy = strat;
+      const btnAva = document.getElementById('btn-strat-avalanche');
+      const btnSnow = document.getElementById('btn-strat-snowball');
+      if (strat === 'avalanche') {
+        btnAva.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-neutral-50 text-neutral-950 transition';
+        btnSnow.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-neutral-800 text-neutral-300 hover:text-white transition';
+      } else {
+        btnSnow.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-neutral-50 text-neutral-950 transition';
+        btnAva.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-neutral-800 text-neutral-300 hover:text-white transition';
+      }
+      renderDebts();
+      showToast(`Estrategia cambiada a ${strat === 'avalanche' ? 'Avalancha' : 'Bola de Nieve'}`, 'info');
+    }
+
+    function renderDebts() {
+      const container = document.getElementById('debts-list');
+      const emptyState = document.getElementById('debts-empty-state');
+      
+      let sorted = [...state.debts];
+      if (state.debtStrategy === 'avalanche') {
+        sorted.sort((a, b) => b.rate - a.rate);
+      } else {
+        sorted.sort((a, b) => a.amount - b.amount);
+      }
+
+      container.innerHTML = '';
+      if (sorted.length === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        sorted.forEach((d, idx) => {
+          const isPriority = idx === 0 && d.amount > 0;
+          const monthsLeft = d.minPay > 0 ? Math.ceil(d.amount / d.minPay) : 0;
+          const initial = d.initialAmount || d.amount;
+          const pctPaid = initial > 0 ? Math.min(100, Math.max(0, Math.round(((initial - d.amount) / initial) * 100))) : 0;
+
+          const card = document.createElement('div');
+          card.className = `p-4 rounded-xl border ${isPriority ? 'bg-amber-950/20 border-amber-800/80' : 'bg-neutral-900 border-neutral-800'} transition`;
+          card.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                ${isPriority ? '<span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-400 text-neutral-950">PRIORIDAD #1</span>' : ''}
+                <span class="font-bold text-neutral-100 text-sm">${d.name}</span>
+              </div>
+              <button onclick="deleteDebt('${d.id}')" title="Eliminar" class="text-neutral-500 hover:text-rose-400 text-xs">✕</button>
+            </div>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-3">
+              <div>
+                <div class="text-[10px] font-mono text-neutral-500 uppercase">Saldo Pendiente</div>
+                <div class="text-base font-bold font-mono text-amber-400">${formatMoney(d.amount)}</div>
+              </div>
+              <div>
+                <div class="text-[10px] font-mono text-neutral-500 uppercase">Tasa Interés</div>
+                <div class="text-base font-bold font-mono text-neutral-200">${d.rate}% TNA</div>
+              </div>
+              <div>
+                <div class="text-[10px] font-mono text-neutral-500 uppercase">Cuota / Mes</div>
+                <div class="text-base font-bold font-mono text-neutral-200">${formatMoney(d.minPay)}</div>
+              </div>
+              <div>
+                <div class="text-[10px] font-mono text-neutral-500 uppercase">Tiempo Estimado</div>
+                <div class="text-base font-bold font-mono text-neutral-200">${monthsLeft} meses</div>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-neutral-800 h-1.5 rounded-full overflow-hidden mb-3">
+              <div class="bg-emerald-400 h-full rounded-full transition-all duration-500" style="width: ${pctPaid}%"></div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] text-neutral-400 font-mono">Vence el día ${d.due} de cada mes · ${pctPaid}% saldado</span>
+              <button onclick="makeDebtPayment('${d.id}', ${d.minPay})" class="px-3 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-mono font-semibold transition">
+                + Abonar Cuota (${formatMoney(d.minPay)})
+              </button>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      }
+    }
+
+    // Goals Logic
+    function handleGoalSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('goal-name').value.trim();
+      const target = parseFloat(document.getElementById('goal-target').value);
+      const current = parseFloat(document.getElementById('goal-current').value) || 0;
+      const deadline = document.getElementById('goal-deadline').value;
+      const icon = document.getElementById('goal-icon').value;
+
+      if (!name || isNaN(target) || target <= 0) {
+        showToast('Completa los campos del objetivo.', 'error');
+        return;
+      }
+
+      const newGoal = {
+        id: Date.now().toString(),
+        name,
+        target,
+        current,
+        deadline,
+        icon
+      };
+
+      state.goals.push(newGoal);
+      saveStateToStorage();
+      renderAll();
+
+      document.getElementById('goal-form').reset();
+      showToast('Meta de ahorro creada con éxito', 'success');
+    }
+
+    function addGoalContribution(id, amount) {
+      const goal = state.goals.find(g => g.id === id);
+      if (!goal) return;
+      goal.current = Math.min(goal.target, goal.current + amount);
+      
+      saveStateToStorage();
+      renderAll();
+
+      if (goal.current >= goal.target) {
+        showToast(`🏆 ¡META CUMPLIDA! Has completado: ${goal.name}`, 'success');
+      } else {
+        showToast(`Aporte de ${formatMoney(amount)} agregado a "${goal.name}"`, 'success');
+      }
+    }
+
+    function deleteGoal(id) {
+      state.goals = state.goals.filter(g => g.id !== id);
+      saveStateToStorage();
+      renderAll();
+      showToast('Meta eliminada', 'info');
+    }
+
+    function renderGoals() {
+      const container = document.getElementById('goals-list');
+      const emptyState = document.getElementById('goals-empty-state');
+      const summaryText = document.getElementById('goals-summary-text');
+
+      summaryText.textContent = `${state.goals.length} metas activas`;
+      container.innerHTML = '';
+
+      if (state.goals.length === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        state.goals.forEach(g => {
+          const pct = Math.min(100, Math.round((g.current / g.target) * 100)) || 0;
+          const card = document.createElement('div');
+          card.className = 'p-5 rounded-xl bg-neutral-900 border border-neutral-800 flex flex-col justify-between';
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-2xl">${g.icon}</span>
+                <button onclick="deleteGoal('${g.id}')" title="Eliminar" class="text-neutral-500 hover:text-rose-400 text-xs">✕</button>
+              </div>
+              <h4 class="font-bold text-neutral-100 text-sm mt-2">${g.name}</h4>
+              <div class="flex items-baseline justify-between mt-3">
+                <span class="text-xs font-mono text-violet-400 font-bold">${formatMoney(g.current)}</span>
+                <span class="text-xs font-mono text-neutral-500">de ${formatMoney(g.target)}</span>
+              </div>
+              <div class="w-full bg-neutral-800 h-2 rounded-full overflow-hidden mt-1.5">
+                <div class="bg-violet-500 h-full rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-neutral-400 font-mono mt-2">
+                <span>${pct}% completado</span>
+                <span>Meta: ${formatDate(g.deadline) || 'Sin fecha'}</span>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-neutral-800/80 flex items-center gap-2">
+              <button onclick="addGoalContribution('${g.id}', 50)" class="flex-1 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-mono font-semibold transition">
+                +${formatMoney(50)}
+              </button>
+              <button onclick="addGoalContribution('${g.id}', 200)" class="flex-1 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-mono font-semibold transition">
+                +${formatMoney(200)}
+              </button>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      }
+    }
+
+    // Analytics & Metrics Calculations
+    function renderMetricsAndAnalytics() {
+      let totalIncome = 0;
+      let totalExpense = 0;
+      let incomeCount = 0;
+      let expenseCount = 0;
+
+      let needsExpense = 0;
+      let wantsExpense = 0;
+
+      state.transactions.forEach(t => {
+        if (t.type === 'income') {
+          totalIncome += t.amount;
+          incomeCount++;
+        } else {
+          totalExpense += t.amount;
+          expenseCount++;
+          if (t.cat.includes('(Necesidad)')) {
+            needsExpense += t.amount;
+          } else if (t.cat.includes('(Deseo)')) {
+            wantsExpense += t.amount;
+          } else {
+            needsExpense += t.amount * 0.5;
+            wantsExpense += t.amount * 0.5;
+          }
+        }
+      });
+
+      const netBalance = totalIncome - totalExpense;
+      const savingsRate = totalIncome > 0 ? Math.max(0, Math.round((netBalance / totalIncome) * 100)) : 0;
+
+      // Update Top Metrics
+      document.getElementById('metric-balance').textContent = formatMoney(netBalance);
+      document.getElementById('metric-balance').className = `text-2xl sm:text-3xl font-bold font-mono mt-2 ${netBalance >= 0 ? 'text-neutral-50' : 'text-rose-400'}`;
+      document.getElementById('metric-savings-rate').textContent = totalIncome > 0 ? `${savingsRate}% tasa ahorro` : '0% tasa ahorro';
+
+      document.getElementById('metric-income').textContent = formatMoney(totalIncome);
+      document.getElementById('metric-income-count').textContent = `${incomeCount} transacciones`;
+
+      document.getElementById('metric-expense').textContent = formatMoney(totalExpense);
+      document.getElementById('metric-expense-count').textContent = `${expenseCount} transacciones`;
+
+      // Health badge
+      const healthBadge = document.getElementById('health-badge');
+      if (totalIncome === 0 && totalExpense > 0) {
+        healthBadge.textContent = 'Solo Gastos';
+        healthBadge.className = 'px-2 py-0.5 text-[10px] font-mono rounded bg-amber-950 text-amber-400 border border-amber-800/50';
+      } else if (netBalance < 0) {
+        healthBadge.textContent = 'Déficit';
+        healthBadge.className = 'px-2 py-0.5 text-[10px] font-mono rounded bg-rose-950 text-rose-400 border border-rose-800/50';
+      } else if (savingsRate >= 20) {
+        healthBadge.textContent = 'Excelente (20%+)';
+        healthBadge.className = 'px-2 py-0.5 text-[10px] font-mono rounded bg-emerald-950 text-emerald-400 border border-emerald-800/50';
+      } else {
+        healthBadge.textContent = 'Aceptable';
+        healthBadge.className = 'px-2 py-0.5 text-[10px] font-mono rounded bg-amber-950 text-amber-400 border border-amber-800/50';
+      }
+
+      // Debts total
+      const totalDebt = state.debts.reduce((acc, d) => acc + d.amount, 0);
+      const totalMinPayment = state.debts.reduce((acc, d) => acc + d.minPay, 0);
+      document.getElementById('metric-debt').textContent = formatMoney(totalDebt);
+      document.getElementById('metric-debt-payment').textContent = `${formatMoney(totalMinPayment)} cuota estimada`;
+
+      // Goals total
+      const totalSavedInGoals = state.goals.reduce((acc, g) => acc + g.current, 0);
+      const totalTargetInGoals = state.goals.reduce((acc, g) => acc + g.target, 0);
+      const goalsPct = totalTargetInGoals > 0 ? Math.round((totalSavedInGoals / totalTargetInGoals) * 100) : 0;
+      document.getElementById('metric-savings').textContent = formatMoney(totalSavedInGoals);
+      document.getElementById('metric-savings-progress').textContent = `${goalsPct}% completado`;
+
+      // 50/30/20 Calculations
+      const base = totalIncome > 0 ? totalIncome : totalExpense;
+      const pctNeeds = base > 0 ? Math.round((needsExpense / base) * 100) : 0;
+      const pctWants = base > 0 ? Math.round((wantsExpense / base) * 100) : 0;
+      const actualSavings = Math.max(0, netBalance);
+      const pctSav = base > 0 ? Math.round((actualSavings / base) * 100) : 0;
+
+      document.getElementById('pct-needs').textContent = `${pctNeeds}% / 50%`;
+      document.getElementById('val-needs').textContent = formatMoney(needsExpense);
+      document.getElementById('bar-needs').style.width = `${Math.min(100, pctNeeds)}%`;
+
+      document.getElementById('pct-wants').textContent = `${pctWants}% / 30%`;
+      document.getElementById('val-wants').textContent = formatMoney(wantsExpense);
+      document.getElementById('bar-wants').style.width = `${Math.min(100, pctWants)}%`;
+
+      document.getElementById('pct-savings').textContent = `${pctSav}% / 20%`;
+      document.getElementById('val-savings').textContent = formatMoney(actualSavings);
+      document.getElementById('bar-savings').style.width = `${Math.min(100, pctSav)}%`;
+
+      // Diagnostic text
+      const diag = document.getElementById('diagnostic-text');
+      diag.innerHTML = `
+        <div class="p-3 rounded-xl bg-neutral-900 border border-neutral-800">
+          <strong>1. Tasa de Ahorro:</strong> Tu tasa actual es del <strong>${savingsRate}%</strong>. ${totalIncome === 0 ? 'Registra tus ingresos para calcular el ratio exacto.' : savingsRate >= 20 ? '🎉 Estás cumpliendo el objetivo saludable del 20% recomendado.' : '⚠ Se sugiere recortar un 10% en gastos de ocio/deseos para robustecer el fondo de ahorro.'}
+        </div>
+        <div class="p-3 rounded-xl bg-neutral-900 border border-neutral-800">
+          <strong>2. Estado de Deuda:</strong> Tienes <strong>${state.debts.length}</strong> pasivo(s) activos por un total de <strong>${formatMoney(totalDebt)}</strong>. ${totalDebt > 0 ? `Siguiendo la estrategia <strong>${state.debtStrategy === 'avalanche' ? 'Avalancha' : 'Bola de Nieve'}</strong>, enfoca cualquier ingreso extra en la deuda principal.` : '🎉 Estás completamente libre de deudas.'}
+        </div>
+        <div class="p-3 rounded-xl bg-neutral-900 border border-neutral-800">
+          <strong>3. Metas de Reserva:</strong> Cuentas con <strong>${formatMoney(totalSavedInGoals)}</strong> resguardados en tus metas activas.
+        </div>
+      `;
+    }
+
+    // Canvas Chart for Categories (HiDPI Sharp)
+    function renderCategoryChart() {
+      const canvas = document.getElementById('category-chart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const displayWidth = 280;
+      const displayHeight = 280;
+
+      canvas.width = displayWidth * dpr;
+      canvas.height = displayHeight * dpr;
+      ctx.scale(dpr, dpr);
+
+      ctx.clearRect(0, 0, displayWidth, displayHeight);
+
+      const catTotals = {};
+      state.transactions.filter(t => t.type === 'expense').forEach(t => {
+        catTotals[t.cat] = (catTotals[t.cat] || 0) + t.amount;
+      });
+
+      const total = Object.values(catTotals).reduce((a, b) => a + b, 0);
+      if (total === 0) {
+        ctx.fillStyle = '#71717a';
+        ctx.font = '12px "JetBrains Mono"';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Sin gastos registrados', displayWidth / 2, displayHeight / 2);
+        return;
+      }
+
+      const colors = ['#f43f5e', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6', '#06b6d4'];
+      let startAngle = -Math.PI / 2;
+      let colorIndex = 0;
+
+      const centerX = displayWidth / 2;
+      const centerY = displayHeight / 2;
+      const radius = 95;
+      const innerRadius = 55;
+
+      for (const [cat, amt] of Object.entries(catTotals)) {
+        const sliceAngle = (amt / total) * 2 * Math.PI;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+        ctx.arc(centerX, centerY, innerRadius, startAngle + sliceAngle, startAngle, true);
+        ctx.closePath();
+        ctx.fillStyle = colors[colorIndex % colors.length];
+        ctx.fill();
+
+        startAngle += sliceAngle;
+        colorIndex++;
+      }
+
+      // Center text
+      ctx.fillStyle = '#fafafa';
+      ctx.font = 'bold 13px "JetBrains Mono"';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(formatMoney(total), centerX, centerY);
+    }
+
+    // Compound Interest Simulator
+    function runSimulation() {
+      const monthly = parseFloat(document.getElementById('sim-monthly').value) || 0;
+      const annualRate = (parseFloat(document.getElementById('sim-rate').value) || 0) / 100;
+      const initial = parseFloat(document.getElementById('sim-initial').value) || 0;
+      const monthlyRate = annualRate / 12;
+
+      function calcFutureVal(years) {
+        const months = years * 12;
+        let balance = initial;
+        let totalDeposited = initial;
+        for (let i = 0; i < months; i++) {
+          balance = (balance + monthly) * (1 + monthlyRate);
+          totalDeposited += monthly;
+        }
+        const interest = Math.max(0, balance - totalDeposited);
+        return { balance, interest };
+      }
+
+      const res3 = calcFutureVal(3);
+      const res7 = calcFutureVal(7);
+      const res15 = calcFutureVal(15);
+
+      document.getElementById('sim-res-3y').textContent = formatMoney(res3.balance);
+      document.getElementById('sim-int-3y').textContent = `+${formatMoney(res3.interest)} de interés ganado`;
+
+      document.getElementById('sim-res-7y').textContent = formatMoney(res7.balance);
+      document.getElementById('sim-int-7y').textContent = `+${formatMoney(res7.interest)} de interés ganado`;
+
+      document.getElementById('sim-res-15y').textContent = formatMoney(res15.balance);
+      document.getElementById('sim-int-15y').textContent = `+${formatMoney(res15.interest)} de interés ganado`;
+    }
+
+    // Master Render
+    function renderAll() {
+      renderTransactions();
+      renderDebts();
+      renderGoals();
+      renderMetricsAndAnalytics();
+      if (!document.getElementById('tab-content-analytics').classList.contains('hidden')) {
+        renderCategoryChart();
+      }
+    }
+
+    // Sample Data
+    function loadSampleData(showNotice = true) {
+      state.transactions = [
+        { id: '1', type: 'income', desc: 'Salario Principal / Empresa', amount: 2800, cat: 'Salario & Empleo (Ingreso)', date: '2026-10-01' },
+        { id: '2', type: 'income', desc: 'Consultoría Web Freelance', amount: 650, cat: 'Freelance & Negocios (Ingreso)', date: '2026-10-05' },
+        { id: '3', type: 'expense', desc: 'Alquiler Departamento', amount: 850, cat: 'Vivienda & Servicios (Necesidad)', date: '2026-10-02' },
+        { id: '4', type: 'expense', desc: 'Supermercado & Despensa Mensual', amount: 420, cat: 'Alimentación (Necesidad)', date: '2026-10-03' },
+        { id: '5', type: 'expense', desc: 'Combustible & Seguro Auto', amount: 180, cat: 'Transporte (Necesidad)', date: '2026-10-04' },
+        { id: '6', type: 'expense', desc: 'Salidas con amigos / Cena', amount: 120, cat: 'Ocio & Entretenimiento (Deseo)', date: '2026-10-06' },
+        { id: '7', type: 'expense', desc: 'Spotify & Netflix & ChatGPT Pro', amount: 45, cat: 'Suscripciones (Deseo)', date: '2026-10-07' }
+      ];
+
+      state.debts = [
+        { id: 'd1', name: 'Tarjeta Visa (Electrodoméstico)', amount: 1200, initialAmount: 1800, rate: 38.5, minPay: 150, due: 12 },
+        { id: 'd2', name: 'Préstamo Personal Bancario', amount: 3500, initialAmount: 5000, rate: 22.0, minPay: 220, due: 28 }
+      ];
+
+      state.goals = [
+        { id: 'g1', name: 'Fondo de Emergencia (6 Meses)', target: 6000, current: 3200, deadline: '2026-12-31', icon: '🛡️' },
+        { id: 'g2', name: 'Vacaciones Fin de Año', target: 1500, current: 950, deadline: '2026-11-30', icon: '✈️' }
+      ];
+
+      saveStateToStorage();
+      renderAll();
+      runSimulation();
+
+      if (showNotice) {
+        showToast('✨ Datos de prueba cargados correctamente', 'success');
+      }
+    }
+
+    function clearAllData() {
+      state.transactions = [];
+      state.debts = [];
+      state.goals = [];
+      saveStateToStorage();
+      renderAll();
+      showToast('Todos los datos han sido reiniciados', 'info');
+    }
+
+    // Export JSON
+    function exportDataJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `kapital_finanzas_backup_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('Copia de respaldo JSON descargada', 'success');
+    }
+
+    // Import JSON File
+    function handleFileImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const parsed = JSON.parse(event.target.result);
+          if (parsed && (Array.isArray(parsed.transactions) || Array.isArray(parsed.debts) || Array.isArray(parsed.goals))) {
+            state = { ...state, ...parsed };
+            saveStateToStorage();
+            document.getElementById('currency-select').value = state.currency || 'USD';
+            changeCurrency(state.currency || 'USD');
+            renderAll();
+            runSimulation();
+            showToast('✓ Respaldo importado y restaurado con éxito', 'success');
+          } else {
+            showToast('El archivo JSON no tiene un formato válido de KAPITAL.', 'error');
+          }
+        } catch (err) {
+          console.error(err);
+          showToast('Error al procesar el archivo JSON.', 'error');
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    // Checkout Modal Simulation
+    function openCheckoutModal(title, price) {
+      document.getElementById('modal-item-title').textContent = title;
+      document.getElementById('modal-item-price').textContent = price;
+      document.getElementById('modal-success-msg').classList.add('hidden');
+      document.getElementById('checkout-modal').classList.remove('hidden');
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById('checkout-modal').classList.add('hidden');
+    }
+
+    function handleModalBackdropClick(e) {
+      if (e.target.id === 'checkout-modal') {
+        closeCheckoutModal();
+      }
+    }
+
+    function handleCheckoutSimulate(e) {
+      e.preventDefault();
+      document.getElementById('modal-success-msg').classList.remove('hidden');
+      setTimeout(() => {
+        showToast('🎉 ¡Adquisición simulada con éxito! Descarga autorizada.', 'success');
+        closeCheckoutModal();
+      }, 1200);
+    }
+  </script>
+
+</body>
+</html>
